@@ -1,0 +1,263 @@
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'details_page.dart';
+
+class RequestPage extends StatefulWidget {
+  @override
+  _RequestPageState createState() => _RequestPageState();
+}
+
+class _RequestPageState extends State<RequestPage> {
+  final _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _hospitalController = TextEditingController();
+
+  String? _bloodGroup;
+  String? _selectedDistrict;
+
+  final List<String> districts = [
+    "Thiruvananthapuram",
+    "Kollam",
+    "Pathanamthitta",
+    "Alappuzha",
+    "Kottayam",
+    "Idukki",
+    "Ernakulam",
+    "Thrissur",
+    "Palakkad",
+    "Malappuram",
+    "Kozhikode",
+    "Wayanad",
+    "Kannur",
+    "Kasaragod",
+  ];
+
+
+  // ================= Validation Functions =================
+  String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) return "Enter your name";
+    if (value.trim().length < 3) return "Name must be at least 3 characters";
+    return null;
+  }
+
+  String? validateAge(String? value) {
+    if (value == null || value.trim().isEmpty) return "Enter your age";
+    final age = int.tryParse(value.trim());
+    if (age == null || age <= 0 || age > 120) return "Enter a valid age";
+    return null;
+  }
+
+  String? validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) return "Enter your phone";
+    final regex = RegExp(r'^\d{10}$');
+    if (!regex.hasMatch(value.trim())) return "Enter a valid 10-digit phone number";
+    return null;
+  }
+
+  String? validateLocation(String? value) {
+    if (value == null || value.trim().isEmpty) return "Enter your location";
+    return null;
+  }
+
+  String? validateHospital(String? value) {
+    if (value == null || value.trim().isEmpty) return "Enter hospital name";
+    return null;
+  }
+
+  String? validateBloodGroup(String? value) {
+    if (value == null || value.isEmpty) return "Select blood group";
+    return null;
+  }
+
+  // ================= Submit Request =================
+  Future<void> _submitRequest() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final requestData = {
+      "name": _nameController.text.trim(),
+      "age": _ageController.text.trim(),
+      "phone": _phoneController.text.trim(),
+      "bloodGroup": _bloodGroup,
+      "location": _selectedDistrict ?? "Not specified",
+      "hospital": _hospitalController.text.trim(),
+      "timestamp": Timestamp.now(),
+    };
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailsPage(requestData: requestData),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        title: const Text("Submit Blood Request"),
+        backgroundColor: Colors.redAccent,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 5,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    "Request Blood",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.redAccent,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Name
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: "Name",
+                      prefixIcon: const Icon(Icons.person),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    validator: validateName,
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Age
+                  TextFormField(
+                    controller: _ageController,
+                    decoration: InputDecoration(
+                      labelText: "Age",
+                      prefixIcon: const Icon(Icons.cake),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: validateAge,
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Phone
+                  TextFormField(
+                    controller: _phoneController,
+                    decoration: InputDecoration(
+                      labelText: "Phone",
+                      prefixIcon: const Icon(Icons.phone),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    keyboardType: TextInputType.phone,
+                    validator: validatePhone,
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Location
+                  // District Dropdown
+                  DropdownButtonFormField<String>(
+                    value: _selectedDistrict,
+                    hint: const Text("Select District"),
+                    items: districts
+                        .map((d) => DropdownMenuItem(value: d, child: Text(d)))
+                        .toList(),
+                    onChanged: (val) => setState(() => _selectedDistrict = val),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.location_on),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    validator: (value) => value == null ? "Select your district" : null,
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // Blood Group
+                  DropdownButtonFormField<String>(
+                    value: _bloodGroup,
+                    hint: const Text("Select Blood Group"),
+                    items: ["A+", "B+", "O+", "AB+", "A-", "B-", "O-", "AB-"]
+                        .map((bg) => DropdownMenuItem(value: bg, child: Text(bg)))
+                        .toList(),
+                    onChanged: (val) => setState(() => _bloodGroup = val),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.bloodtype),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    validator: validateBloodGroup,
+                  ),
+                  const SizedBox(height: 15),
+
+                  // Hospital
+                  TextFormField(
+                    controller: _hospitalController,
+                    decoration: InputDecoration(
+                      labelText: "Hospital",
+                      prefixIcon: const Icon(Icons.local_hospital),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey[100],
+                    ),
+                    validator: validateHospital,
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Submit Button
+                  SizedBox(
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _submitRequest,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        "Submit Request",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
