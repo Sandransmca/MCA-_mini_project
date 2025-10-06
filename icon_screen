@@ -1,0 +1,110 @@
+import 'package:flutter/material.dart';
+import 'request_blood.dart';
+import 'edit_profile.dart';
+import 'login_screen.dart'; // Make sure to import your login screen
+
+class IconScreen extends StatelessWidget {
+  const IconScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+
+      // ✅ AppBar with proper back button handling
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context); // Go back if possible
+            } else {
+              // Otherwise navigate to LoginScreen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoginScreen(),
+                ),
+              );
+            }
+          },
+        ),
+        title: const Text(
+          "Dashboard",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+
+          // User avatar + welcome text
+          const CircleAvatar(
+            radius: 50,
+            backgroundColor: Colors.red,
+            child: Icon(Icons.person, size: 60, color: Colors.white),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            "Welcome, User",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 30),
+
+          // Options list
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                // Edit Profile
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.edit, color: Colors.grey),
+                    title: const Text("Edit Profile"),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const EditProfileScreen()),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Ask Blood
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.bloodtype, color: Colors.grey),
+                    title: const Text("Ask Blood"),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>  RequestPage(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
